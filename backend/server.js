@@ -1,15 +1,25 @@
+// --------------------- IMPORT MODULES
 const express = require("express");
 const app = express();
 
-const { portNumber, db, saltRounds } = require("./conf.js");
+const { portNumber, db, saltRounds, jwtSecret } = require("./conf.js");
 
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+require("./passport-strategie.js");
+
+// --------------------- USE MODULES
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(passport.initialize());
+
+// --------------------- ROUTES
 
 app.get("/", (req, res) => {
   res.send("/");
@@ -36,6 +46,33 @@ app.post("/signup", (req, res) => {
     );
   });
 });
+
+app.post("/signin", (req, res) => {
+  passport.authenticate("local", { session: false }, (err, user, info) => {
+    if (err || !user) {
+      return res.status(401).json({
+        message: "Authentication failed",
+        user,
+        err,
+        info
+      });
+    }
+    req.login(user, { session: false }, loginErr => {
+      if (loginErr) {
+        return res.status(401).json({
+          message: "Authentication failed",
+          user,
+          loginErr
+        });
+      }
+      user.password = undefined;
+      const token = jwt.sign(JSON.stringify(user), jwtSecret);
+      return res.status(200).json({ token, user });
+    });
+  })(req, res);
+});
+
+// --------------------- SERVER LAUNCH
 
 app.listen(portNumber, () => {
   console.log(`API root available at: http://localhost:${portNumber}/`);
