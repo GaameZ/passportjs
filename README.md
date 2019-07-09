@@ -13,7 +13,7 @@ npm i --save express body-parser cors mysql bcrypt passport jsonwebtoken passpor
 > Créer un fichier conf.js à la racine du dossier /backend.
 > Contenu conf.js:
 
-    ```
+ 
     const  portNumber  =  5050;
 
     const  mysql  =  require("mysql");
@@ -47,7 +47,7 @@ npm i --save express body-parser cors mysql bcrypt passport jsonwebtoken passpor
         jwtSecret
 
     };
-    ```
+
 
 Mettre les bonnes valeurs pour host, user, password, database et jwtSecret.
 
