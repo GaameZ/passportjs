@@ -13,21 +13,29 @@ router.post("/signup", (req, res) => {
   const email = req.body.email;
   let password = req.body.password;
   const pseudo = req.body.pseudo;
-  bcrypt.hash(password, saltRounds, function(err, hash) {
-    if (err) console.log(err);
-    password = hash;
+  db.query("SELECT email FROM users WHERE email = ?", email, (err, results) => {
+    if (err) {
+      res.status(500).send("Erreur");
+    } else if (results.length > 0) {
+      res.status(401).send("Cette adresse email existe déjà");
+    } else {
+      bcrypt.hash(password, saltRounds, function(err, hash) {
+        if (err) console.log(err);
+        password = hash;
 
-    db.query(
-      "INSERT INTO users (email, password, pseudo) values (?,?,?)",
-      [email, password, pseudo],
-      (err, results) => {
-        if (err) {
-          res.status(500).send("Erreur");
-        } else {
-          res.sendStatus(200);
-        }
-      }
-    );
+        db.query(
+          "INSERT INTO users (email, password, pseudo) values (?,?,?)",
+          [email, password, pseudo],
+          (err, results) => {
+            if (err) {
+              res.status(500).send("Erreur");
+            } else {
+              res.sendStatus(200);
+            }
+          }
+        );
+      });
+    }
   });
 });
 
