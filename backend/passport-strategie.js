@@ -15,13 +15,22 @@ passport.use(
         `SELECT id , email , password , pseudo FROM users WHERE email = ?`,
         [email, password],
         (err, results) => {
-          const user = results[0];
+          let user;
+          if (results) {
+            user = results[0];
+          }
 
-          if (err || user === undefined) return done(err);
+          if (err || user === undefined) {
+            return done(null, false, {
+              message: "Adresse mail ou mot de passe incorrect."
+            });
+          }
           bcrypt.compare(password, user.password, (errBcrypt, result) => {
             if (errBcrypt) return done(errBcrypt);
             if (!result) {
-              return done(null, false, { message: "Incorrect password!" });
+              return done(null, false, {
+                message: "Adresse mail ou mot de passe incorrect."
+              });
             }
             return done(null, results[0]);
           });
